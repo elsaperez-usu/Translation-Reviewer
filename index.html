@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Translation Review Instrument</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+body{margin:0}
+/* Layout: one centered working column; numbered sections (A/B/C) follow the real order of a review; owner gets a second "Responses" view with a wide table. */
+:root{
+  --bg:#F4F6F9; --surface:#FFFFFF; --sunk:#EBEFF4; --ink:#14202E; --muted:#566373; --line:#D8DEE6;
+  --navy:#0F2439; --accent:#0F2439; --accent-ink:#FFFFFF; --link:#1D4E86; --focus:#2F6FB5;
+  --minor:#2F6F4F; --minor-bg:#E3F1EA; --major:#8A5A00; --major-bg:#FBF0D9; --critical:#A3261B; --critical-bg:#FBE4E1;
+  --ok:#2F6F4F;
+  --display:"Playfair Display", Georgia, "Times New Roman", serif;
+  --body:"Source Sans 3", "Source Sans Pro", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C131C; --surface:#131D29; --sunk:#0F1823; --ink:#E5EBF2; --muted:#9AA7B6; --line:#263446;
+  --navy:#C9D9EC; --accent:#A9C6E8; --accent-ink:#0C131C; --link:#9CC2EC; --focus:#7FB0E6;
+  --minor:#7FCBA3; --minor-bg:#163126; --major:#E8B95A; --major-bg:#33270F; --critical:#F09084; --critical-bg:#3A1A17; --ok:#7FCBA3;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0C131C; --surface:#131D29; --sunk:#0F1823; --ink:#E5EBF2; --muted:#9AA7B6; --line:#263446;
+  --navy:#C9D9EC; --accent:#A9C6E8; --accent-ink:#0C131C; --link:#9CC2EC; --focus:#7FB0E6;
+  --minor:#7FCBA3; --minor-bg:#163126; --major:#E8B95A; --major-bg:#33270F; --critical:#F09084; --critical-bg:#3A1A17; --ok:#7FCBA3;
+  color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:0 96px}
+.wrap{max-width:880px;margin:0 auto}
+.wide{max-width:1180px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-family:var(--display);font-size:clamp(1.7rem,4vw,2.3rem);line-height:1.15;color:var(--navy);font-weight:700}
+h2{font-family:var(--display);font-size:1.35rem;color:var(--navy);font-weight:600}
+h3{font-size:1rem;font-weight:700}
+p{margin:0}
+a{color:var(--link)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* Header */
+.top{display:flex;flex-direction:column;gap:14px;padding-block:28px 18px;border-bottom:1px solid var(--line)}
+.brandrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.eyebrow{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.lede{color:var(--muted);max-width:62ch}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--surface)}
+.seg button{border:0;background:none;padding:4px 12px;border-radius:999px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.tabs{display:flex;gap:4px;margin-top:4px}
+.tabs button{border:0;background:none;padding:8px 14px;border-bottom:2px solid transparent;cursor:pointer;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* Sections */
+main{display:flex;flex-direction:column;gap:28px;padding-top:24px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.sec-head{display:flex;gap:12px;align-items:baseline;margin-bottom:16px}
+.sec-letter{font-family:var(--display);font-size:1.35rem;color:var(--muted);min-width:1.2em}
+.sec-sub{color:var(--muted);font-size:.93rem;margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.full{grid-column:1/-1}
+@media (max-width:620px){.grid{grid-template-columns:minmax(0,1fr)}}
+label.f{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:.92rem;min-width:0}
+.hint{font-weight:400;color:var(--muted);font-size:.85rem}
+.req{color:var(--critical)}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 11px;font-size:.98rem}
+textarea{min-height:76px;resize:vertical;line-height:1.45}
+input:focus,select:focus,textarea:focus{border-color:var(--focus);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 22%,transparent)}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+legend{font-weight:600;font-size:.92rem;margin-bottom:6px;padding:0}
+
+/* Guide */
+.guide{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px}
+@media (max-width:760px){.guide{grid-template-columns:minmax(0,1fr)}}
+.steps{margin:10px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.sevlist{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.sevrow{display:grid;grid-template-columns:88px minmax(0,1fr);gap:10px;align-items:start;font-size:.93rem}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.78rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
+.pill.minor{background:var(--minor-bg);color:var(--minor)}
+.pill.major{background:var(--major-bg);color:var(--major)}
+.pill.critical{background:var(--critical-bg);color:var(--critical)}
+.pill.neutral{background:var(--sunk);color:var(--muted)}
+.example{margin-top:16px;border:1px dashed var(--line);border-radius:var(--r);padding:14px;background:var(--sunk);font-size:.92rem}
+.example .tag{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+/* Choice chips */
+.chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:620px){.chips{grid-template-columns:minmax(0,1fr)}}
+.chip{position:relative;display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:6px;padding:9px 11px;cursor:pointer;background:var(--surface)}
+.chip input{margin-top:4px;accent-color:var(--accent)}
+.chip b{display:block;font-size:.93rem}
+.chip span{display:block;font-size:.83rem;color:var(--muted);line-height:1.35}
+.chip:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+.sevpick{display:flex;gap:8px;flex-wrap:wrap}
+.sevpick label{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:.92rem;background:var(--surface)}
+.sevpick label:has(input:checked).minor{border-color:var(--minor);background:var(--minor-bg);color:var(--minor)}
+.sevpick label:has(input:checked).major{border-color:var(--major);background:var(--major-bg);color:var(--major)}
+.sevpick label:has(input:checked).critical{border-color:var(--critical);background:var(--critical-bg);color:var(--critical)}
+.sevpick input{accent-color:var(--accent)}
+
+/* Issue list */
+.issues{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.issue{border:1px solid var(--line);border-left-width:4px;border-radius:6px;padding:12px 14px;display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:6px 14px;background:var(--surface)}
+.issue.minor{border-left-color:var(--minor)} .issue.major{border-left-color:var(--major)} .issue.critical{border-left-color:var(--critical)}
+.issue .pg{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.85rem;font-weight:600}
+.issue .pg strong{display:block;font-size:1.25rem;color:var(--ink);font-weight:700;line-height:1.1}
+.issue .pg .para{display:block;margin-top:4px;color:var(--ink);font-size:.9rem}
+.issue .body{display:flex;flex-direction:column;gap:6px;min-width:0}
+.issue .meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.85rem;color:var(--muted)}
+.diff{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;font-size:.95rem}
+.diff .was{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--critical) 60%,transparent);color:var(--muted);overflow-wrap:anywhere}
+.diff .now{color:var(--ink);overflow-wrap:anywhere}
+.diff .lbl{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-right:6px;text-decoration:none;display:inline-block}
+.issue .cmt{font-size:.9rem;color:var(--muted);font-style:italic;overflow-wrap:anywhere}
+.issue .acts{display:flex;flex-direction:column;gap:4px}
+@media (max-width:560px){.issue{grid-template-columns:minmax(0,1fr)}.issue .acts{flex-direction:row}}
+.empty{border:1px dashed var(--line);border-radius:6px;padding:16px;color:var(--muted);font-size:.93rem;text-align:left}
+.addbox{border-top:1px solid var(--line);padding-top:18px}
+.addbox h3{margin-bottom:12px}
+details.src summary{cursor:pointer;color:var(--link);font-size:.9rem;font-weight:600}
+details.src[open] summary{margin-bottom:8px}
+
+/* Ratings */
+.rating{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding-block:12px;border-bottom:1px solid var(--line)}
+.rating:last-of-type{border-bottom:0}
+.rating .q b{display:block}
+.rating .q span{font-size:.87rem;color:var(--muted)}
+.scale{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+@media (max-width:560px){.scale{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.scale label{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);border-radius:6px;padding:8px 6px;cursor:pointer;text-align:center;background:var(--surface)}
+.scale label b{font-size:1.15rem;font-variant-numeric:tabular-nums}
+.scale label span{font-size:.76rem;color:var(--muted);line-height:1.25}
+.scale input{position:absolute;opacity:0;pointer-events:none}
+.scale label:has(input:checked){border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.scale label:has(input:checked) span{color:var(--accent-ink)}
+.scale label:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:2px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:.93rem;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{padding:4px 10px;font-size:.84rem}
+.btn.ghost{border-color:transparent;background:none;color:var(--link)}
+.btn.danger{color:var(--critical)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+
+/* Action bar */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
+.bar .inner{max-width:880px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.status{font-size:.88rem;color:var(--muted);flex:1;min-width:140px}
+.status.ok{color:var(--ok)}
+.status.warn{color:var(--major)}
+.notice{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;background:var(--sunk);font-size:.93rem}
+.notice.warn{border-color:color-mix(in srgb,var(--major) 45%,var(--line));background:var(--major-bg)}
+.notice.good{border-color:color-mix(in srgb,var(--ok) 45%,var(--line));background:var(--minor-bg)}
+.err{color:var(--critical);font-size:.88rem;font-weight:600}
+
+/* My reviews */
+.mine{display:flex;flex-direction:column;gap:6px}
+.mine-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line);font-size:.93rem}
+.mine-row:last-child{border-bottom:0}
+.mine-row .t{font-weight:600;flex:1;min-width:160px;overflow-wrap:anywhere}
+
+/* Responses */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:700px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.stat b{display:block;font-size:1.7rem;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{font-size:.84rem;color:var(--muted)}
+.stat.crit b{color:var(--critical)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.filters label.f{min-width:150px;flex:1}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--sunk);position:sticky;top:0;white-space:nowrap}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+td .was{text-decoration:line-through;color:var(--muted)}
+td .seg-cell{min-width:260px;max-width:420px;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+td select,td input{font-size:.86rem;padding:5px 8px;min-width:130px}
+tr.done td{opacity:.72}
+.copybox textarea{min-height:160px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem}
+footer{color:var(--muted);font-size:.84rem;padding-top:28px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <header class="top">
+    <div class="brandrow">
+      <span class="eyebrow" data-i18n="brand">CTIS · Utah State University</span>
+      <div class="seg" role="group" aria-label="Language / Idioma">
+        <button type="button" id="lang-en" aria-pressed="true">English</button>
+        <button type="button" id="lang-es" aria-pressed="false">Español</button>
+      </div>
+    </div>
+    <h1 data-i18n="title">Translation Review Instrument</h1>
+    <p class="lede" data-i18n="lede">For healthcare professionals reviewing translated patient forms. Log each issue with its page and segment, rate how serious it is, and suggest a better wording.</p>
+  </header>
+
+  <!-- REVIEW VIEW -->
+  <main id="view-review">
+    <div id="fallback-note" class="notice warn" hidden></div>
+
+    <section class="card" aria-labelledby="h-guide">
+      <div class="guide">
+        <div>
+          <h2 id="h-guide" data-i18n="howTitle">How to complete this review</h2>
+          <ol class="steps">
+            <li data-i18n="how1">Fill in your professional background and the form you are reviewing.</li>
+            <li data-i18n="how2">Read the translated form page by page. For each problem, copy the segment exactly as it appears, add the page number, and choose a category and severity.</li>
+            <li data-i18n="how3">Write your suggested edit and, if helpful, a short reason. One issue per entry.</li>
+            <li data-i18n="how4">Give the form an overall rating, then submit. Your work saves as a draft while you go.</li>
+          </ol>
+        </div>
+        <div>
+          <h3 data-i18n="sevTitle">Severity levels</h3>
+          <div class="sevlist">
+            <div class="sevrow"><span><span class="pill critical" data-i18n="sev_critical">Critical</span></span><span data-i18n="sev_critical_d">Could affect patient safety, consent, or a care decision. Must be fixed before use.</span></div>
+            <div class="sevrow"><span><span class="pill major" data-i18n="sev_major">Major</span></span><span data-i18n="sev_major_d">Could confuse patients or lead to an incomplete or wrong answer on the form.</span></div>
+            <div class="sevrow"><span><span class="pill minor" data-i18n="sev_minor">Minor</span></span><span data-i18n="sev_minor_d">Meaning is clear, but wording, style, or spelling could be improved.</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="example" aria-label="Example entry">
+        <div class="tag" data-i18n="exTag">Example entry (not part of any review)</div>
+        <div class="issue critical" style="margin-top:8px">
+          <div class="pg"><span data-i18n="pageShort">Page</span><strong>2</strong><span class="para">¶ 3</span></div>
+          <div class="body">
+            <div class="meta"><span class="pill critical" data-i18n="sev_critical">Critical</span><span data-i18n="cat_accuracy">Accuracy</span></div>
+            <div class="diff">
+              <div class="was"><span class="lbl" data-i18n="lblWas">Change</span>una vez al día</div>
+              <div class="now"><span class="lbl" data-i18n="lblNow">To</span>dos veces al día</div>
+            </div>
+            <div class="cmt" data-i18n="exCmt">Source says “twice daily”; the translation says once a day. Dosing error.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="mine-card" hidden aria-labelledby="h-mine">
+      <div class="row" style="margin-bottom:8px">
+        <h2 id="h-mine" data-i18n="mineTitle">Your reviews</h2><span class="spacer"></span>
+        <button type="button" class="btn small" id="btn-new" data-i18n="newReview">Start a new review</button>
+      </div>
+      <div class="mine" id="mine-list"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-a">
+      <div class="sec-head"><span class="sec-letter">A</span><div><h2 id="h-a" data-i18n="aTitle">Reviewer and form</h2><p class="sec-sub" data-i18n="aSub">Fields marked * are required.</p></div></div>
+      <div class="grid">
+        <label class="f"><span><span data-i18n="name">Your name</span> <span class="req">*</span></span><input type="text" id="rv-name" autocomplete="name"></label>
+        <label class="f"><span><span data-i18n="role">Professional role</span> <span class="req">*</span></span>
+          <select id="rv-role">
+            <option value="" data-i18n="choose">Choose…</option>
+            <option value="physician" data-i18n="role_physician">Physician / APP</option>
+            <option value="nurse" data-i18n="role_nurse">Nurse</option>
+            <option value="chw" data-i18n="role_chw">Community health worker / promotor(a)</option>
+            <option value="interpreter" data-i18n="role_interpreter">Medical interpreter</option>
+            <option value="pharmacist" data-i18n="role_pharmacist">Pharmacist</option>
+            <option value="socialwork" data-i18n="role_socialwork">Social worker / case manager</option>
+            <option value="admin" data-i18n="role_admin">Front desk / patient access</option>
+            <option value="other" data-i18n="role_other">Other</option>
+          </select></label>
+        <label class="f full" id="wrap-role-other" hidden><span data-i18n="roleOther">Describe your role</span><input type="text" id="rv-role-other"></label>
+        <label class="f"><span data-i18n="years">Years in your field</span>
+          <select id="rv-years">
+            <option value="" data-i18n="choose">Choose…</option>
+            <option value="lt2" data-i18n="y_lt2">Less than 2</option>
+            <option value="2-5">2–5</option>
+            <option value="6-10">6–10</option>
+            <option value="gt10" data-i18n="y_gt10">More than 10</option>
+          </select></label>
+        <label class="f"><span data-i18n="langBg">Your Spanish background</span>
+          <select id="rv-lang">
+            <option value="" data-i18n="choose">Choose…</option>
+            <option value="native" data-i18n="lb_native">First language</option>
+            <option value="heritage" data-i18n="lb_heritage">Heritage speaker</option>
+            <option value="l2" data-i18n="lb_l2">Learned as a second language</option>
+            <option value="other" data-i18n="role_other">Other</option>
+          </select></label>
+        <label class="f full"><span><span data-i18n="formTitle">Title of the form you are reviewing</span> <span class="req">*</span></span><input type="text" id="f-title" data-i18n-ph="formTitlePh" placeholder="e.g., Patient Intake and Health History"></label>
+        <label class="f"><span data-i18n="formVersion">Version or date on the form</span><input type="text" id="f-version" data-i18n-ph="formVersionPh" placeholder="e.g., Rev. 03/2026"></label>
+        <label class="f"><span data-i18n="direction">Translation direction</span>
+          <select id="f-direction">
+            <option value="en-es" data-i18n="dir_enes">English → Spanish</option>
+            <option value="es-en" data-i18n="dir_esen">Spanish → English</option>
+          </select></label>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-b">
+      <div class="sec-head"><span class="sec-letter">B</span><div><h2 id="h-b"><span data-i18n="bTitle">Issues found</span> <span id="issue-count" class="pill neutral" style="vertical-align:middle;margin-left:4px">0</span></h2><p class="sec-sub" data-i18n="bSub">One issue per entry. Entries are sorted by page.</p></div></div>
+      <div class="issues" id="issue-list"></div>
+
+      <form class="addbox" id="issue-form" novalidate>
+        <h3 id="issue-form-title" data-i18n="addTitle">Add an issue</h3>
+        <div class="grid">
+          <label class="f"><span><span data-i18n="page">Page number</span> <span class="req">*</span></span><input type="number" id="e-page" min="1" step="1" inputmode="numeric"></label>
+          <label class="f"><span><span data-i18n="para">Paragraph number</span><br><span class="hint" data-i18n="paraHint">Count from the top of the page. Use the item or question number if the page has one.</span></span><input type="text" id="e-para" inputmode="numeric" data-i18n-ph="paraPh" placeholder="e.g., 3 or 4b"></label>
+          <label class="f full"><span><span data-i18n="also">Same change also needed on (optional)</span><br><span class="hint" data-i18n="alsoHint">If the same word or phrase appears in other places, list each page and paragraph.</span></span><input type="text" id="e-also" data-i18n-ph="alsoPh" placeholder="e.g., p. 4 ¶ 2; p. 7 ¶ 1; p. 9 ¶ 5"></label>
+          <label class="f full"><span><span data-i18n="segment">Segment as it appears in the translation</span> <span class="req">*</span><br><span class="hint" data-i18n="segmentHint">Copy the sentence, phrase, or field label exactly.</span></span><textarea id="e-segment"></textarea></label>
+          <details class="src full"><summary data-i18n="srcToggle">Add the original (source) text (optional)</summary>
+            <label class="f"><span data-i18n="source">Source text</span><textarea id="e-source"></textarea></label>
+          </details>
+          <fieldset class="full"><legend><span data-i18n="category">Type of issue</span> <span class="req">*</span></legend><div class="chips" id="cat-chips"></div></fieldset>
+          <fieldset class="full"><legend><span data-i18n="severity">Severity</span> <span class="req">*</span></legend><div class="sevpick" id="sev-pick"></div></fieldset>
+          <label class="f full"><span data-i18n="edit">Suggested edit</span><textarea id="e-edit" data-i18n-ph="editPh" placeholder="Write the segment the way it should read."></textarea></label>
+          <label class="f full"><span data-i18n="comment">Comment or reason</span><textarea id="e-comment" data-i18n-ph="commentPh" placeholder="Why this change matters for patients or staff (optional)."></textarea></label>
+        </div>
+        <p class="err" id="issue-err" hidden></p>
+        <div class="row" style="margin-top:14px">
+          <button type="submit" class="btn primary" id="btn-add" data-i18n="addBtn">Add issue</button>
+          <button type="button" class="btn" id="btn-cancel-edit" hidden data-i18n="cancel">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="h-c">
+      <div class="sec-head"><span class="sec-letter">C</span><div><h2 id="h-c" data-i18n="cTitle">Overall evaluation</h2><p class="sec-sub" data-i18n="cSub">Rate the whole form. 4 is the highest.</p></div></div>
+      <div id="ratings"></div>
+      <label class="f" style="margin-top:14px"><span data-i18n="overallCmt">Overall comments</span><textarea id="o-comments" data-i18n-ph="overallPh" placeholder="Patterns you noticed, sections that worked well, anything the translator should know."></textarea></label>
+    </section>
+
+    <div id="submitted-note" class="notice good" hidden></div>
+    <footer>Elsa Pérez, PhD · CTIS</footer>
+  </main>
+</div>
+
+</div>
+
+<div class="bar" id="bar">
+  <div class="inner">
+    <span class="status" id="status" aria-live="polite"></span>
+    <button type="button" class="btn" id="btn-download" data-i18n="downloadMine">Download my review</button>
+    <button type="button" class="btn" id="btn-save" data-i18n="saveDraft">Save draft</button>
+    <button type="button" class="btn primary" id="btn-submit" data-i18n="submit">Submit review</button>
+  </div>
+</div>
+<script>
+(function(){
+"use strict";
+const I = {
+en:{brand:"CTIS · Utah State University",title:"Translation Review Instrument",lede:"For healthcare professionals reviewing translated patient forms. Log each issue with its page and segment, rate how serious it is, and suggest a better wording.",
+tabReview:"Review a form",tabResp:"Responses",howTitle:"How to complete this review",
+how1:"Fill in your professional background and the form you are reviewing.",
+how2:"Read the translated form page by page. For each problem, note the page and paragraph number, copy the word or phrase exactly as it appears, and choose a type and severity.",
+how3:"Write your suggested edit and, if helpful, a short reason. One issue per entry.",
+how4:"Give the form an overall rating, then submit. Your work saves as a draft while you go.",
+sevTitle:"Severity levels",sev_critical:"Critical",sev_major:"Major",sev_minor:"Minor",
+sev_critical_d:"Could affect patient safety, consent, or a care decision. Must be fixed before use.",
+sev_major_d:"Could confuse patients or lead to an incomplete or wrong answer on the form.",
+sev_minor_d:"Meaning is clear, but wording, style, or spelling could be improved.",
+exTag:"Example entry (not part of any review)",pageShort:"Page",lblWas:"Change",lblNow:"To",thPara:"¶",
+exCmt:"Source says “twice daily”; the translation says once a day. Dosing error.",
+mineTitle:"Your reviews",newReview:"Start a new review",aTitle:"Reviewer and form",aSub:"Fields marked * are required.",
+name:"Your name",role:"Professional role",choose:"Choose…",role_physician:"Physician / APP",role_nurse:"Nurse",role_chw:"Community health worker / promotor(a)",role_interpreter:"Medical interpreter",role_pharmacist:"Pharmacist",role_socialwork:"Social worker / case manager",role_admin:"Front desk / patient access",role_other:"Other",roleOther:"Describe your role",
+years:"Years in your field",y_lt2:"Less than 2",y_gt10:"More than 10",langBg:"Your Spanish background",lb_native:"First language",lb_heritage:"Heritage speaker",lb_l2:"Learned as a second language",
+formTitle:"Title of the form you are reviewing",formTitlePh:"e.g., Patient Intake and Health History",formVersion:"Version or date on the form",formVersionPh:"e.g., Rev. 03/2026",direction:"Translation direction",dir_enes:"English → Spanish",dir_esen:"Spanish → English",
+bTitle:"Issues found",bSub:"Add as many issues as you need, from any page. Each entry has its own page and paragraph number. After you add one, the form clears so you can enter the next.",para:"Paragraph number",also:"Same change also needed on (optional)",alsoHint:"If the same word or phrase appears in other places, list each page and paragraph.",alsoPh:"e.g., p. 4 ¶ 2; p. 7 ¶ 1; p. 9 ¶ 5",alsoOn:"Also on",addBtnAnother:"Add issue",addTitle:"Add an issue",editTitle:"Edit issue",page:"Page number",para:"Paragraph number",paraHint:"Count from the top of the page. Use the item or question number if the page has one.",paraPh:"e.g., 3 or 4b",segment:"Word or phrase to change",segmentHint:"Copy it exactly as it appears in the translation.",srcToggle:"Add the original (source) text (optional)",source:"Source text",category:"Type of issue",severity:"Severity",edit:"Suggested edit",editPh:"Write the word or phrase the way it should read.",comment:"Comment or reason",commentPh:"Why this change matters for patients or staff (optional).",addBtn:"Add issue",saveChanges:"Save changes",cancel:"Cancel",
+cat_accuracy:"Accuracy",cat_accuracy_d:"Meaning changed, left out, or added",cat_terminology:"Medical terminology",cat_terminology_d:"Wrong, outdated, or inconsistent term",cat_clarity:"Clarity for patients",cat_clarity_d:"Hard to understand; not plain language",cat_cultural:"Cultural fit",cat_cultural_d:"Regional usage, register, or cultural appropriateness",cat_grammar:"Grammar and spelling",cat_grammar_d:"Grammar, accents, punctuation, agreement",cat_format:"Format and layout",cat_format_d:"Missing text, fields, numbering, or layout",
+noIssues:"No issues logged yet. Use the form below to add the first one.",editBtn:"Edit",delBtn:"Delete",confirmDel:"Confirm delete",
+errIssue:"Add the page number, the word or phrase to change, a type of issue, and a severity.",
+cTitle:"Overall evaluation",cSub:"Rate the whole form. 4 is the highest.",
+r_accuracy:"Accuracy",r_accuracy_d:"The translation says what the original says, with nothing missing or added.",r_terminology:"Terminology",r_terminology_d:"Medical terms are correct and used consistently.",r_clarity:"Clarity",r_clarity_d:"Patients and families with varied literacy can understand and complete it.",r_readiness:"Readiness",r_readiness_d:"The form can be used with patients.",
+s1:"Not usable",s2:"Needs major revision",s3:"Usable after minor edits",s4:"Ready as is",
+overallCmt:"Overall comments",overallPh:"Patterns you noticed, sections that worked well, anything the translator should know.",
+downloadMine:"Download my review",saveDraft:"Save draft",submit:"Submit review",submitEmpty:"Submit with no issues",
+stLocal:"Saved in this browser only",stSaving:"Saving…",stSaved:"Draft saved",stSubmitted:"Submitted",stUnsaved:"Not saved yet",stErr:"Couldn't save. Check your connection and try again.",
+errSubmit:"Before submitting, complete: ",fName:"your name",fRole:"your role",fTitle:"the form title",fRatings:"all four ratings",
+warnNoIssues:"You haven't logged any issues. If the form has none, press the button again to submit.",
+submittedNote:"Thank you. Your review was submitted. You can still reopen it from “Your reviews” to make changes.",
+fallback:"Your answers can't be saved to the shared review database from this link. They are kept in this browser. When you finish, use “Download my review” and email the file to the review coordinator.",
+st_draft:"Draft",st_submitted:"Submitted",open:"Open",issuesN:"issues",current:"Open now",untitled:"Untitled form",
+fForm:"Form",fDecision:"Decision",fSearch:"Search",all:"All",incDrafts:"Include drafts",exportCsv:"Export issues (CSV)",exportOverall:"Export ratings (CSV)",
+thForm:"Form",thPage:"Page",thSeg:"Change → suggested edit",thType:"Type",thReviewer:"Reviewer",thNote:"Note to translator",thMean:"Mean",ovTitle:"Overall ratings by reviewer",
+dec_none:"Pending",dec_accepted:"Accepted",dec_modified:"Accepted with changes",dec_rejected:"Not accepted",
+statReviews:"reviews submitted",statIssues:"issues logged",statCritical:"critical issues",statPending:"pending decisions",
+showing:"Showing",of:"of",respEmpty:"No submitted reviews yet. When reviewers submit, their issues appear here with a decision column for each one.",
+copyTitle:"Copy your review",copySub:"Downloading isn't available here. Copy this text and paste it into a spreadsheet or an email to the review coordinator.",copyBtn:"Copy",close:"Close",copied:"Copied",copyFail:"Select the text and copy it with your keyboard.",
+dlDeclined:"Download canceled.",noSource:"(no edit suggested)"},
+es:{brand:"CTIS · Utah State University",title:"Instrumento de revisión de traducciones",lede:"Para profesionales de la salud que revisan formularios traducidos para pacientes. Registre cada problema con su página y segmento, indique su gravedad y sugiera una mejor redacción.",
+tabReview:"Revisar un formulario",tabResp:"Respuestas",howTitle:"Cómo completar esta revisión",
+how1:"Indique su perfil profesional y el formulario que va a revisar.",
+how2:"Lea el formulario traducido página por página. Para cada problema, anote el número de página y de párrafo, copie la palabra o frase tal como aparece y elija el tipo y la gravedad.",
+how3:"Escriba la corrección que sugiere y, si ayuda, una breve justificación. Un problema por entrada.",
+how4:"Califique el formulario en general y envíe su revisión. Su trabajo se guarda como borrador mientras avanza.",
+sevTitle:"Niveles de gravedad",sev_critical:"Crítico",sev_major:"Mayor",sev_minor:"Menor",
+sev_critical_d:"Podría afectar la seguridad del paciente, el consentimiento o una decisión de atención. Debe corregirse antes de usarse.",
+sev_major_d:"Podría confundir al paciente o llevar a una respuesta incompleta o equivocada en el formulario.",
+sev_minor_d:"El significado es claro, pero la redacción, el estilo o la ortografía pueden mejorar.",
+exTag:"Ejemplo de entrada (no forma parte de ninguna revisión)",pageShort:"Página",lblWas:"Cambiar",lblNow:"Por",thPara:"¶",
+exCmt:"El original dice “twice daily”; la traducción dice una vez al día. Error de dosis.",
+mineTitle:"Sus revisiones",newReview:"Empezar una nueva revisión",aTitle:"Revisor y formulario",aSub:"Los campos con * son obligatorios.",
+name:"Su nombre",role:"Función profesional",choose:"Elija…",role_physician:"Médico(a) / proveedor(a) de práctica avanzada",role_nurse:"Enfermero(a)",role_chw:"Trabajador(a) comunitario(a) de salud / promotor(a)",role_interpreter:"Intérprete médico(a)",role_pharmacist:"Farmacéutico(a)",role_socialwork:"Trabajador(a) social / gestor(a) de casos",role_admin:"Recepción / admisión de pacientes",role_other:"Otro",roleOther:"Describa su función",
+years:"Años de experiencia en su campo",y_lt2:"Menos de 2",y_gt10:"Más de 10",langBg:"Su relación con el español",lb_native:"Lengua materna",lb_heritage:"Hablante de herencia",lb_l2:"Segunda lengua aprendida",
+formTitle:"Título del formulario que revisa",formTitlePh:"p. ej., Admisión del paciente e historial médico",formVersion:"Versión o fecha del formulario",formVersionPh:"p. ej., Rev. 03/2026",direction:"Dirección de la traducción",dir_enes:"Inglés → español",dir_esen:"Español → inglés",
+bTitle:"Problemas encontrados",bSub:"Agregue todos los problemas que necesite, de cualquier página. Cada entrada tiene su propio número de página y de párrafo. Al agregar una, el formulario se vacía para que escriba la siguiente.",also:"El mismo cambio también se necesita en (opcional)",alsoHint:"Si la misma palabra o frase aparece en otros lugares, anote cada página y párrafo.",alsoPh:"p. ej., pág. 4 ¶ 2; pág. 7 ¶ 1; pág. 9 ¶ 5",alsoOn:"También en",addTitle:"Agregar un problema",editTitle:"Editar problema",page:"Número de página",para:"Número de párrafo",paraHint:"Cuente desde el inicio de la página. Use el número de pregunta o ítem si la página lo tiene.",paraPh:"p. ej., 3 o 4b",segment:"Palabra o frase que se debe cambiar",segmentHint:"Cópiela exactamente como aparece en la traducción.",srcToggle:"Agregar el texto original (opcional)",source:"Texto original",category:"Tipo de problema",severity:"Gravedad",edit:"Corrección sugerida",editPh:"Escriba la palabra o frase como debería decir.",comment:"Comentario o justificación",commentPh:"Por qué este cambio importa para pacientes o personal (opcional).",addBtn:"Agregar problema",saveChanges:"Guardar cambios",cancel:"Cancelar",
+cat_accuracy:"Precisión",cat_accuracy_d:"Significado alterado, omitido o añadido",cat_terminology:"Terminología médica",cat_terminology_d:"Término incorrecto, anticuado o inconsistente",cat_clarity:"Claridad para pacientes",cat_clarity_d:"Difícil de entender; no es lenguaje sencillo",cat_cultural:"Adecuación cultural",cat_cultural_d:"Uso regional, registro o pertinencia cultural",cat_grammar:"Gramática y ortografía",cat_grammar_d:"Gramática, acentos, puntuación, concordancia",cat_format:"Formato y diseño",cat_format_d:"Texto, campos o numeración faltantes; diseño",
+noIssues:"Aún no hay problemas registrados. Use el formulario de abajo para agregar el primero.",editBtn:"Editar",delBtn:"Eliminar",confirmDel:"Confirmar",
+errIssue:"Agregue el número de página, la palabra o frase que se debe cambiar, el tipo de problema y la gravedad.",
+cTitle:"Evaluación general",cSub:"Califique el formulario completo. 4 es la calificación más alta.",
+r_accuracy:"Precisión",r_accuracy_d:"La traducción dice lo mismo que el original, sin omisiones ni añadidos.",r_terminology:"Terminología",r_terminology_d:"Los términos médicos son correctos y se usan de forma coherente.",r_clarity:"Claridad",r_clarity_d:"Pacientes y familias con distintos niveles de alfabetización pueden entenderlo y completarlo.",r_readiness:"Listo para usar",r_readiness_d:"El formulario puede usarse con pacientes.",
+s1:"No se puede usar",s2:"Requiere revisión mayor",s3:"Usable con cambios menores",s4:"Listo tal como está",
+overallCmt:"Comentarios generales",overallPh:"Patrones que notó, secciones que funcionan bien, lo que el traductor debería saber.",
+downloadMine:"Descargar mi revisión",saveDraft:"Guardar borrador",submit:"Enviar revisión",submitEmpty:"Enviar sin problemas",
+stLocal:"Guardado solo en este navegador",stSaving:"Guardando…",stSaved:"Borrador guardado",stSubmitted:"Enviada",stUnsaved:"Aún sin guardar",stErr:"No se pudo guardar. Revise su conexión e intente de nuevo.",
+errSubmit:"Antes de enviar, complete: ",fName:"su nombre",fRole:"su función",fTitle:"el título del formulario",fRatings:"las cuatro calificaciones",
+warnNoIssues:"No ha registrado ningún problema. Si el formulario no tiene ninguno, presione el botón otra vez para enviar.",
+submittedNote:"Gracias. Su revisión fue enviada. Puede volver a abrirla desde “Sus revisiones” para hacer cambios.",
+fallback:"Desde este enlace no se pueden guardar sus respuestas en la base de datos compartida. Se conservan en este navegador. Al terminar, use “Descargar mi revisión” y envíe el archivo por correo a la coordinación de la revisión.",
+st_draft:"Borrador",st_submitted:"Enviada",open:"Abrir",issuesN:"problemas",current:"Abierta",untitled:"Formulario sin título",
+fForm:"Formulario",fDecision:"Decisión",fSearch:"Buscar",all:"Todos",incDrafts:"Incluir borradores",exportCsv:"Exportar problemas (CSV)",exportOverall:"Exportar calificaciones (CSV)",
+thForm:"Formulario",thPage:"Pág.",thSeg:"Cambiar → corrección sugerida",thType:"Tipo",thReviewer:"Revisor(a)",thNote:"Nota para el traductor",thMean:"Promedio",ovTitle:"Calificaciones generales por revisor",
+dec_none:"Pendiente",dec_accepted:"Aceptada",dec_modified:"Aceptada con cambios",dec_rejected:"No aceptada",
+statReviews:"revisiones enviadas",statIssues:"problemas registrados",statCritical:"problemas críticos",statPending:"decisiones pendientes",
+showing:"Mostrando",of:"de",respEmpty:"Aún no hay revisiones enviadas. Cuando los revisores envíen, sus problemas aparecerán aquí con una columna de decisión para cada uno.",
+copyTitle:"Copiar su revisión",copySub:"La descarga no está disponible aquí. Copie este texto y péguelo en una hoja de cálculo o en un correo a la coordinación de la revisión.",copyBtn:"Copiar",close:"Cerrar",copied:"Copiado",copyFail:"Seleccione el texto y cópielo con el teclado.",
+dlDeclined:"Descarga cancelada.",noSource:"(sin corrección sugerida)"}
+};
+/* ===== CONFIGURATION ===== */
+/* Paste your Apps Script web app URL (ends in /exec) between the quotes. */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxRdvTViZp9xBTVY746JlUlZdFrp2MVOZ353IzBzIYIGaeSQqF3IkSp1c5xdH62C4bOyA/exec";
+/* ========================== */
+
+Object.assign(I.en,{
+how4:"Give the form an overall rating, then submit. Your work is saved on this device while you go, so you can close the page and come back.",
+stLocal:"Saved on this device",stSending:"Sending…",stSent:"Submitted",stUnsaved:"Not saved yet",
+stErr:"Couldn't send your review. Check your internet connection and try again. If it keeps failing, use “Download my review” and email the file to the review coordinator.",
+submittedNote:"Thank you. Your review was sent. To make changes later, open it from “Your reviews” on this same device and submit again. The new version replaces the old one.",
+notConfigured:"This form isn't connected to a results sheet yet, so reviews can't be submitted. Use “Download my review” and email the file to the review coordinator.",
+saveDraft:"Save draft",sentUnconfirmed:"Sent. If the coordinator doesn't receive it, use “Download my review” and email the file."});
+Object.assign(I.es,{
+how4:"Califique el formulario en general y envíe su revisión. Su trabajo se guarda en este dispositivo mientras avanza, así que puede cerrar la página y volver después.",
+stLocal:"Guardado en este dispositivo",stSending:"Enviando…",stSent:"Enviada",stUnsaved:"Aún sin guardar",
+stErr:"No se pudo enviar su revisión. Revise su conexión a internet e intente de nuevo. Si sigue fallando, use “Descargar mi revisión” y envíe el archivo por correo a la coordinación de la revisión.",
+submittedNote:"Gracias. Su revisión fue enviada. Para hacer cambios más tarde, ábrala desde “Sus revisiones” en este mismo dispositivo y envíela otra vez. La nueva versión reemplaza a la anterior.",
+notConfigured:"Este formulario todavía no está conectado a una hoja de resultados, así que no se pueden enviar revisiones. Use “Descargar mi revisión” y envíe el archivo por correo a la coordinación de la revisión.",
+saveDraft:"Guardar borrador",sentUnconfirmed:"Enviada. Si la coordinación no la recibe, use “Descargar mi revisión” y envíe el archivo por correo."});
+
+const CATS=["accuracy","terminology","clarity","cultural","grammar","format"];
+const SEVS=["critical","major","minor"];
+const CRIT=["accuracy","terminology","clarity","readiness"];
+const $=id=>document.getElementById(id);
+const qsa=s=>Array.from(document.querySelectorAll(s));
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+let lang=lsGet("tri-lang")||((navigator.language||"").toLowerCase().startsWith("es")?"es":"en");
+const t=k=>(I[lang]&&I[lang][k]!=null)?I[lang][k]:(I.en[k]!=null?I.en[k]:k);
+const tEn=k=>I.en[k]!=null?I.en[k]:k;
+function newId(){return (crypto.randomUUID?crypto.randomUUID():(Date.now().toString(36)+Math.random().toString(36).slice(2))).replace(/[^A-Za-z0-9-]/g,"")}
+function h(tag,attrs,kids){const n=document.createElement(tag);if(attrs)for(const k in attrs){const v=attrs[k];if(v==null||v===false)continue;if(k==="text")n.textContent=v;else if(k==="cls")n.className=v;else if(k.startsWith("on"))n.addEventListener(k.slice(2),v);else n.setAttribute(k,v===true?"":v)}(kids||[]).forEach(c=>{if(c!=null)n.append(c)});return n}
+const configured=/^https:\/\/script\.google(usercontent)?\.com\//.test(SCRIPT_URL);
+
+/* ---------- state (kept on this device) ---------- */
+function blank(){return{id:newId(),status:"draft",reviewer:{name:"",role:"",roleOther:"",years:"",langBg:""},form:{title:"",version:"",direction:"en-es"},entries:[],overall:{accuracy:0,terminology:0,clarity:0,readiness:0,comments:""},createdAt:new Date().toISOString(),updatedAt:null,submittedAt:null}}
+function loadAll(){try{const o=JSON.parse(lsGet("tri-reviews")||"{}");return o&&typeof o==="object"?o:{}}catch(e){return{}}}
+let store=loadAll();
+let review=store[lsGet("tri-current")]?Object.assign(blank(),store[lsGet("tri-current")]):blank();
+let editingId=null,confirmDelId=null,warnedEmpty=false,statusKey="",statusTime=null;
+
+function saveLocal(){
+  readMeta();review.updatedAt=new Date().toISOString();
+  const empty=!review.reviewer.name&&!review.form.title&&!review.entries.length;
+  if(!empty){store[review.id]=JSON.parse(JSON.stringify(review));lsSet("tri-reviews",JSON.stringify(store))}
+  lsSet("tri-current",review.id);
+  if(!empty){statusKey="local";statusTime=new Date()}
+  renderStatus();renderMine();
+}
+let debounceT=null;
+function touched(immediate){clearTimeout(debounceT);if(immediate)saveLocal();else debounceT=setTimeout(saveLocal,800)}
+
+/* ---------- static render ---------- */
+function applyI18n(){
+  document.documentElement.lang=lang;
+  $("lang-en").setAttribute("aria-pressed",String(lang==="en"));$("lang-es").setAttribute("aria-pressed",String(lang==="es"));
+  qsa("[data-i18n]").forEach(n=>{n.textContent=t(n.dataset.i18n)});
+  qsa("[data-i18n-ph]").forEach(n=>{n.placeholder=t(n.dataset.i18nPh)});
+  document.title=t("title");
+  if(!configured){const n=$("fallback-note");n.textContent=t("notConfigured");n.hidden=false}
+  renderChoices();renderRatings();renderIssues();renderMine();renderStatus();updateFormMode();
+}
+function getRadio(name){const n=document.querySelector('input[name="'+name+'"]:checked');return n?n.value:""}
+function renderChoices(){
+  const cur=getRadio("e-cat"),sev=getRadio("e-sev");
+  $("cat-chips").replaceChildren(...CATS.map(c=>h("label",{cls:"chip"},[h("input",{type:"radio",name:"e-cat",value:c,id:"cat-"+c,checked:cur===c}),h("div",null,[h("b",{text:t("cat_"+c)}),h("span",{text:t("cat_"+c+"_d")})])])));
+  $("sev-pick").replaceChildren(...SEVS.map(s=>h("label",{cls:s},[h("input",{type:"radio",name:"e-sev",value:s,id:"sev-"+s,checked:sev===s}),document.createTextNode(t("sev_"+s))])));
+}
+function renderRatings(){
+  $("ratings").replaceChildren(...CRIT.map(k=>h("fieldset",{cls:"rating"},[
+    h("legend",{cls:"q"},[h("b",{text:t("r_"+k)}),h("span",{text:t("r_"+k+"_d")})]),
+    h("div",{cls:"scale"},[1,2,3,4].map(v=>h("label",null,[h("input",{type:"radio",name:"r-"+k,id:"r-"+k+"-"+v,value:String(v),checked:review.overall[k]===v,onchange:()=>{review.overall[k]=v;touched(true)}}),h("b",{text:String(v)}),h("span",{text:t("s"+v)})])))
+  ])));
+}
+function fillMeta(){
+  $("rv-name").value=review.reviewer.name||"";$("rv-role").value=review.reviewer.role||"";$("rv-role-other").value=review.reviewer.roleOther||"";
+  $("rv-years").value=review.reviewer.years||"";$("rv-lang").value=review.reviewer.langBg||"";
+  $("f-title").value=review.form.title||"";$("f-version").value=review.form.version||"";$("f-direction").value=review.form.direction||"en-es";
+  $("o-comments").value=review.overall.comments||"";$("wrap-role-other").hidden=review.reviewer.role!=="other";
+}
+function readMeta(){
+  review.reviewer.name=$("rv-name").value.trim();review.reviewer.role=$("rv-role").value;review.reviewer.roleOther=$("rv-role-other").value.trim();
+  review.reviewer.years=$("rv-years").value;review.reviewer.langBg=$("rv-lang").value;
+  review.form.title=$("f-title").value.trim();review.form.version=$("f-version").value.trim();review.form.direction=$("f-direction").value;
+  review.overall.comments=$("o-comments").value;
+  $("wrap-role-other").hidden=review.reviewer.role!=="other";
+}
+
+/* ---------- issues ---------- */
+function paraNum(e){const n=parseFloat(e.para);return isNaN(n)?9999:n}
+function sortedEntries(){return review.entries.slice().sort((a,b)=>(a.page-b.page)||(paraNum(a)-paraNum(b))||((a.createdAt||"")<(b.createdAt||"")?-1:1))}
+function issueCard(e){
+  const diff=h("div",{cls:"diff"},[h("div",{cls:"was"},[h("span",{cls:"lbl",text:t("lblWas")}),document.createTextNode(e.segment)]),
+    e.edit?h("div",{cls:"now"},[h("span",{cls:"lbl",text:t("lblNow")}),document.createTextNode(e.edit)]):h("div",{cls:"cmt",text:t("noSource")})]);
+  if(e.source)diff.prepend(h("div",{cls:"cmt",style:"font-style:normal"},[h("span",{cls:"lbl",text:t("source")}),document.createTextNode(e.source)]));
+  const body=h("div",{cls:"body"},[h("div",{cls:"meta"},[h("span",{cls:"pill "+e.severity,text:t("sev_"+e.severity)}),h("span",{text:t("cat_"+e.category)})]),diff,e.also?h("div",{cls:"meta"},[h("b",{text:t("alsoOn")+":"}),h("span",{text:e.also})]):null,e.comment?h("div",{cls:"cmt",text:e.comment}):null]);
+  const acts=h("div",{cls:"acts"},[
+    h("button",{type:"button",cls:"btn small",text:t("editBtn"),onclick:()=>startEdit(e.id)}),
+    h("button",{type:"button",cls:"btn small danger",text:confirmDelId===e.id?t("confirmDel"):t("delBtn"),onclick:()=>delEntry(e.id)})]);
+  return h("div",{cls:"issue "+e.severity},[h("div",{cls:"pg"},[h("span",{text:t("pageShort")}),h("strong",{text:String(e.page)}),e.para?h("span",{cls:"para",text:"¶ "+e.para}):null]),body,acts]);
+}
+function renderIssues(){
+  const es=sortedEntries();$("issue-count").textContent=String(es.length);
+  $("issue-list").replaceChildren(...(es.length?es.map(issueCard):[h("div",{cls:"empty",text:t("noIssues")})]));
+}
+function clearIssueForm(){["e-page","e-para","e-also","e-segment","e-source","e-edit","e-comment"].forEach(i=>$(i).value="");qsa('input[name="e-cat"],input[name="e-sev"]').forEach(n=>n.checked=false);$("issue-err").hidden=true;editingId=null;updateFormMode()}
+function updateFormMode(){$("issue-form-title").textContent=t(editingId?"editTitle":"addTitle");$("btn-add").textContent=t(editingId?"saveChanges":"addBtn");$("btn-cancel-edit").hidden=!editingId}
+function startEdit(id){
+  const e=review.entries.find(x=>x.id===id);if(!e)return;editingId=id;confirmDelId=null;
+  $("e-page").value=e.page;$("e-para").value=e.para||"";$("e-also").value=e.also||"";$("e-segment").value=e.segment;$("e-source").value=e.source||"";$("e-edit").value=e.edit||"";$("e-comment").value=e.comment||"";
+  if(e.source)document.querySelector("details.src").open=true;
+  const c=$("cat-"+e.category);if(c)c.checked=true;const s=$("sev-"+e.severity);if(s)s.checked=true;
+  updateFormMode();renderIssues();$("issue-form").scrollIntoView({behavior:"smooth",block:"start"});$("e-page").focus({preventScroll:true});
+}
+function delEntry(id){
+  if(confirmDelId!==id){confirmDelId=id;renderIssues();return}
+  review.entries=review.entries.filter(x=>x.id!==id);confirmDelId=null;if(editingId===id)clearIssueForm();renderIssues();touched(true);
+}
+$("issue-form").addEventListener("submit",ev=>{
+  ev.preventDefault();
+  const page=parseInt($("e-page").value,10),segment=$("e-segment").value.trim(),category=getRadio("e-cat"),severity=getRadio("e-sev");
+  if(!(page>0)||!segment||!category||!severity){$("issue-err").textContent=t("errIssue");$("issue-err").hidden=false;return}
+  const data={page,para:$("e-para").value.trim(),also:$("e-also").value.trim(),segment,source:$("e-source").value.trim(),category,severity,edit:$("e-edit").value.trim(),comment:$("e-comment").value.trim()};
+  if(editingId){const e=review.entries.find(x=>x.id===editingId);Object.assign(e,data,{updatedAt:new Date().toISOString()})}
+  else review.entries.push(Object.assign({id:newId(),createdAt:new Date().toISOString()},data));
+  const wasEditing=!!editingId;clearIssueForm();renderIssues();touched(true);warnedEmpty=false;
+  if(!wasEditing){$("e-page").value=page;$("e-para").focus()}
+});
+$("btn-cancel-edit").addEventListener("click",()=>{clearIssueForm();renderIssues()});
+
+/* ---------- status ---------- */
+function renderStatus(){
+  const s=$("status");let txt="",cls="status";
+  const tm=statusTime?" · "+statusTime.toLocaleTimeString(lang==="es"?"es":"en",{hour:"numeric",minute:"2-digit"}):"";
+  if(statusKey==="sent"){txt=t("stSent")+tm;cls+=" ok"}
+  else if(statusKey==="local"){txt=(review.status==="submitted"?t("stSent")+" · ":"")+t("stLocal")+tm}
+  else if(statusKey==="sending")txt=t("stSending");
+  else if(statusKey==="err"){txt=t("stErr");cls+=" warn"}
+  else txt=t("stUnsaved");
+  s.className=cls;s.textContent=txt;
+}
+["rv-name","rv-role-other","f-title","f-version","o-comments"].forEach(i=>$(i).addEventListener("input",()=>touched(false)));
+["rv-role","rv-years","rv-lang","f-direction"].forEach(i=>$(i).addEventListener("change",()=>touched(true)));
+$("btn-save").addEventListener("click",()=>{clearTimeout(debounceT);saveLocal()});
+
+/* ---------- submit to Google Sheet ---------- */
+function roleLabelEn(r){return r.reviewer.role==="other"?(r.reviewer.roleOther||"Other"):(r.reviewer.role?tEn("role_"+r.reviewer.role):"")}
+function payload(){
+  const r=review;const yrs={lt2:"Less than 2","2-5":"2–5","6-10":"6–10",gt10:"More than 10"};const lb={native:"First language",heritage:"Heritage speaker",l2:"Second language",other:"Other"};
+  return{id:r.id,lang,submittedAt:r.submittedAt,
+    reviewer:{name:r.reviewer.name,role:roleLabelEn(r),years:yrs[r.reviewer.years]||"",langBg:lb[r.reviewer.langBg]||""},
+    form:{title:r.form.title,version:r.form.version,direction:r.form.direction==="es-en"?"Spanish → English":"English → Spanish"},
+    overall:{accuracy:r.overall.accuracy,terminology:r.overall.terminology,clarity:r.overall.clarity,readiness:r.overall.readiness,comments:r.overall.comments},
+    entries:sortedEntries().map(e=>({id:e.id,page:e.page,para:e.para||"",also:e.also||"",segment:e.segment,edit:e.edit||"",source:e.source||"",category:tEn("cat_"+e.category),severity:tEn("sev_"+e.severity),comment:e.comment||""}))};
+}
+async function send(body){
+  const json=JSON.stringify(body);
+  try{
+    const res=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:json,redirect:"follow"});
+    const j=await res.json();
+    if(!j||!j.ok)throw Object.assign(new Error((j&&j.error)||"rejected"),{hard:true});
+    return "ok";
+  }catch(e){
+    if(e&&e.hard)throw e;
+    /* Some browsers block reading Google's reply. Resend without reading it; the sheet replaces any earlier copy of this review, so a repeat is harmless. */
+    await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:json});
+    return "unconfirmed";
+  }
+}
+$("btn-submit").addEventListener("click",async()=>{
+  readMeta();
+  const note=$("submitted-note");
+  const miss=[];if(!review.reviewer.name)miss.push(t("fName"));if(!review.reviewer.role)miss.push(t("fRole"));if(!review.form.title)miss.push(t("fTitle"));if(CRIT.some(k=>!review.overall[k]))miss.push(t("fRatings"));
+  if(miss.length){note.className="notice warn";note.textContent=t("errSubmit")+miss.join(", ")+".";note.hidden=false;note.scrollIntoView({behavior:"smooth",block:"center"});return}
+  if(!review.entries.length&&!warnedEmpty){warnedEmpty=true;note.className="notice warn";note.textContent=t("warnNoIssues");note.hidden=false;$("btn-submit").textContent=t("submitEmpty");note.scrollIntoView({behavior:"smooth",block:"center"});return}
+  if(!configured){note.className="notice warn";note.textContent=t("notConfigured");note.hidden=false;return}
+  warnedEmpty=false;$("btn-submit").textContent=t("submit");$("btn-submit").disabled=true;
+  statusKey="sending";renderStatus();
+  const prev=review.submittedAt;review.submittedAt=new Date().toISOString();
+  try{
+    const r=await send(payload());
+    review.status="submitted";saveLocal();statusKey="sent";statusTime=new Date();renderStatus();
+    note.className="notice good";note.textContent=r==="ok"?t("submittedNote"):t("sentUnconfirmed");note.hidden=false;note.scrollIntoView({behavior:"smooth",block:"center"});
+  }catch(e){
+    review.submittedAt=prev;statusKey="err";renderStatus();
+    note.className="notice warn";note.textContent=t("stErr");note.hidden=false;
+  }finally{$("btn-submit").disabled=false}
+});
+
+/* ---------- my reviews (this device) ---------- */
+function renderMine(){
+  const list=Object.values(store).sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));
+  $("mine-card").hidden=!list.length;
+  $("mine-list").replaceChildren(...list.map(r=>h("div",{cls:"mine-row"},[
+    h("span",{cls:"t",text:(r.form&&r.form.title)||t("untitled")}),
+    h("span",{cls:"pill "+(r.status==="submitted"?"minor":"neutral"),text:t("st_"+(r.status||"draft"))}),
+    h("span",{cls:"hint",text:(r.entries?r.entries.length:0)+" "+t("issuesN")}),
+    r.id===review.id?h("span",{cls:"hint",text:t("current")}):h("button",{type:"button",cls:"btn small",text:t("open"),onclick:()=>loadReview(r.id)})])));
+}
+function loadReview(id){
+  saveLocal();review=Object.assign(blank(),JSON.parse(JSON.stringify(store[id])));lsSet("tri-current",id);
+  clearIssueForm();fillMeta();renderRatings();renderIssues();renderMine();$("submitted-note").hidden=true;statusKey="local";statusTime=review.updatedAt?new Date(review.updatedAt):null;renderStatus();window.scrollTo({top:0,behavior:"smooth"});
+}
+$("btn-new").addEventListener("click",()=>{saveLocal();review=blank();lsSet("tri-current",review.id);clearIssueForm();fillMeta();renderRatings();renderIssues();renderMine();$("submitted-note").hidden=true;statusKey="";renderStatus();window.scrollTo({top:0,behavior:"smooth"})});
+
+/* ---------- download ---------- */
+const csvCell=v=>{const s=v==null?"":String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+const toCsv=rows=>"﻿"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+function slug(s){return (s||"form").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"form"}
+$("btn-download").addEventListener("click",()=>{
+  readMeta();const p=payload();
+  const head=["review_id","reviewer","role","form","form_version","direction","page","paragraph","also_on","phrase_to_change","suggested_edit","source_text","issue_type","severity","comment","rating_accuracy","rating_terminology","rating_clarity","rating_readiness","overall_comments"];
+  const ov=[p.overall.accuracy||"",p.overall.terminology||"",p.overall.clarity||"",p.overall.readiness||"",p.overall.comments||""];
+  const base=[p.id,p.reviewer.name,p.reviewer.role,p.form.title,p.form.version,p.form.direction];
+  let rows=p.entries.map(e=>base.concat([e.page,e.para,e.also,e.segment,e.edit,e.source,e.category,e.severity,e.comment],ov));
+  if(!rows.length)rows=[base.concat(["","","","","","","","",""],ov)];
+  const blob=new Blob([toCsv([head].concat(rows))],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="review-"+slug(review.form.title)+"-"+slug(review.reviewer.name)+".csv";
+  document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+});
+
+$("lang-en").addEventListener("click",()=>{lang="en";lsSet("tri-lang",lang);applyI18n()});
+$("lang-es").addEventListener("click",()=>{lang="es";lsSet("tri-lang",lang);applyI18n()});
+
+fillMeta();applyI18n();
+if(store[review.id]){statusKey="local";statusTime=review.updatedAt?new Date(review.updatedAt):null;renderStatus()}
+
+})();
+</script>
+</body>
+</html>
